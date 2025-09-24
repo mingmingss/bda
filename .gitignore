@@ -1,0 +1,16 @@
+# General
+.DS_Store
+__pycache__/
+*.pyc
+.env
+.venv
+
+# uv
+.uv/
+.python-version
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+Thumbs.db
