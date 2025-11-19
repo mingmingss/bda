@@ -38,16 +38,16 @@ viz_dir.mkdir(exist_ok=True)
 print("\n[1] 데이터 로드 중...")
 
 # 모델 성능 비교
-performance_df = pd.read_csv(output_dir / "model_performance_comparison.csv", encoding='utf-8-sig')
+performance_df = pd.read_csv(output_dir / "model_performance_comparison_v2.csv", encoding='utf-8-sig')
 print(f"✓ 모델 성능 비교 데이터 로드: {len(performance_df)}개 모델")
 
 # 예측 결과
-predictions_df = pd.read_csv(output_dir / "2025_predictions_detailed.csv", encoding='utf-8-sig')
+predictions_df = pd.read_csv(output_dir / "2025_predictions_detailed_v2.csv", encoding='utf-8-sig')
 predictions_df['일시'] = pd.to_datetime(predictions_df['일시'])
 print(f"✓ 예측 결과 데이터 로드: {len(predictions_df)}개 경기")
 
 # Feature Importance (있는 경우)
-feature_importance_path = output_dir / "feature_importance.csv"
+feature_importance_path = output_dir / "feature_importance_v2.csv"
 if feature_importance_path.exists():
     feature_importance_df = pd.read_csv(feature_importance_path, encoding='utf-8-sig')
     print(f"✓ Feature Importance 데이터 로드: {len(feature_importance_df)}개 Features")
