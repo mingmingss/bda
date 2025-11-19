@@ -38,16 +38,16 @@ viz_dir.mkdir(exist_ok=True)
 print("\n[1] 데이터 로드 중...")
 
 # 모델 성능 비교
-performance_df = pd.read_csv(output_dir / "model_performance_comparison_v2.csv", encoding='utf-8-sig')
+performance_df = pd.read_csv(output_dir / "model_performance.csv", encoding='utf-8-sig')
 print(f"✓ 모델 성능 비교 데이터 로드: {len(performance_df)}개 모델")
 
 # 예측 결과
-predictions_df = pd.read_csv(output_dir / "2025_predictions_detailed_v2.csv", encoding='utf-8-sig')
+predictions_df = pd.read_csv(output_dir / "predictions_2025.csv", encoding='utf-8-sig')
 predictions_df['일시'] = pd.to_datetime(predictions_df['일시'])
 print(f"✓ 예측 결과 데이터 로드: {len(predictions_df)}개 경기")
 
 # Feature Importance (있는 경우)
-feature_importance_path = output_dir / "feature_importance_v2.csv"
+feature_importance_path = output_dir / "feature_importance.csv"
 if feature_importance_path.exists():
     feature_importance_df = pd.read_csv(feature_importance_path, encoding='utf-8-sig')
     print(f"✓ Feature Importance 데이터 로드: {len(feature_importance_df)}개 Features")
@@ -106,12 +106,12 @@ fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
 # 2.1 관중 수 기준
 ax1 = axes[0]
-ax1.scatter(predictions_df['관중수'], predictions_df['예측관중_추정트렌드'],
+ax1.scatter(predictions_df['관중수'], predictions_df['예측관중'],
             alpha=0.5, s=50, edgecolors='black', linewidth=0.5)
 
 # 완벽한 예측선
-min_val = min(predictions_df['관중수'].min(), predictions_df['예측관중_추정트렌드'].min())
-max_val = max(predictions_df['관중수'].max(), predictions_df['예측관중_추정트렌드'].max())
+min_val = min(predictions_df['관중수'].min(), predictions_df['예측관중'].min())
+max_val = max(predictions_df['관중수'].max(), predictions_df['예측관중'].max())
 ax1.plot([min_val, max_val], [min_val, max_val], 'r--', linewidth=2, label='Perfect Prediction')
 
 ax1.set_xlabel('Actual Attendance', fontsize=12, fontweight='bold')
@@ -121,9 +121,9 @@ ax1.legend()
 ax1.grid(True, alpha=0.3)
 
 # 통계 정보 추가
-mae = np.mean(np.abs(predictions_df['관중수'] - predictions_df['예측관중_추정트렌드']))
-rmse = np.sqrt(np.mean((predictions_df['관중수'] - predictions_df['예측관중_추정트렌드'])**2))
-r2 = 1 - np.sum((predictions_df['관중수'] - predictions_df['예측관중_추정트렌드'])**2) / \
+mae = np.mean(np.abs(predictions_df['관중수'] - predictions_df['예측관중']))
+rmse = np.sqrt(np.mean((predictions_df['관중수'] - predictions_df['예측관중'])**2))
+r2 = 1 - np.sum((predictions_df['관중수'] - predictions_df['예측관중'])**2) / \
     np.sum((predictions_df['관중수'] - predictions_df['관중수'].mean())**2)
 
 textstr = f'MAE: {mae:.0f}\nRMSE: {rmse:.0f}\nR²: {r2:.4f}'
@@ -163,7 +163,7 @@ ax.plot(predictions_sorted['일시'], predictions_sorted['관중수'],
        label='Actual Attendance', linewidth=2, alpha=0.7, color='blue')
 
 # 예측 관중 수
-ax.plot(predictions_sorted['일시'], predictions_sorted['예측관중_추정트렌드'],
+ax.plot(predictions_sorted['일시'], predictions_sorted['예측관중'],
        label='Predicted Attendance', linewidth=2, alpha=0.7, color='red')
 
 # 이동평균 (트렌드)
@@ -217,7 +217,7 @@ predictions_df['월'] = predictions_df['일시'].dt.month
 
 monthly_stats = predictions_df.groupby('월').agg({
     '관중수': 'mean',
-    '예측관중_추정트렌드': 'mean',
+    '예측관중': 'mean',
     '오차': lambda x: np.mean(np.abs(x))
 }).reset_index()
 
@@ -271,7 +271,7 @@ predictions_df['요일'] = predictions_df['요일_숫자'].map(weekday_map_kor)
 
 weekday_stats = predictions_df.groupby('요일').agg({
     '관중수': 'mean',
-    '예측관중_추정트렌드': 'mean',
+    '예측관중': 'mean',
     '오차': lambda x: np.mean(np.abs(x))
 }).reset_index()
 
@@ -289,7 +289,7 @@ width = 0.35
 
 ax1.bar(x - width/2, weekday_stats['관중수'], width,
        label='Actual', alpha=0.8, color='blue', edgecolor='black')
-ax1.bar(x + width/2, weekday_stats['예측관중_추정트렌드'], width,
+ax1.bar(x + width/2, weekday_stats['예측관중'], width,
        label='Predicted', alpha=0.8, color='red', edgecolor='black')
 
 ax1.set_xlabel('Day of Week', fontsize=12, fontweight='bold')
@@ -324,7 +324,7 @@ print("  7/7 구장별 예측 정확도...")
 
 stadium_stats = predictions_df.groupby('구장').agg({
     '관중수': ['mean', 'count'],
-    '예측관중_추정트렌드': 'mean',
+    '예측관중': 'mean',
     '오차': lambda x: np.mean(np.abs(x))
 }).reset_index()
 
