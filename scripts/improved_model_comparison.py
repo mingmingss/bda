@@ -106,7 +106,10 @@ print("-" * 80)
 
 # 3.1 시간 관련 Features
 print("3.1 시간 관련 Features 생성...")
-weekday_map = {'월': 0, '화': 1, '수': 2, '목': 3, '금': 4, '토': 5, '일': 6}
+weekday_map = {
+    '월요일': 0, '화요일': 1, '수요일': 2, '목요일': 3,
+    '금요일': 4, '토요일': 5, '일요일': 6
+}
 df['요일_숫자'] = df['요일'].map(weekday_map)
 df['주말여부'] = df['요일_숫자'].apply(lambda x: 1 if x >= 4 else 0)
 df['월_sin'] = np.sin(2 * np.pi * df['월'] / 12)
@@ -192,6 +195,32 @@ le_away = LabelEncoder()
 df['구장_인코딩'] = le_stadium.fit_transform(df['구장'])
 df['홈팀_인코딩'] = le_home.fit_transform(df['홈'])
 df['방문팀_인코딩'] = le_away.fit_transform(df['방문'])
+
+# 3.7 최종 NaN 체크 및 처리
+print("\n3.7 최종 NaN 체크 및 처리...")
+nan_counts = df.isnull().sum()
+nan_columns = nan_counts[nan_counts > 0]
+
+if len(nan_columns) > 0:
+    print(f"⚠️  Feature Engineering 후 NaN 발견:")
+    for col in nan_columns.index:
+        print(f"  - {col}: {nan_columns[col]}개")
+        if df[col].dtype in ['float64', 'int64']:
+            # 수치형: 평균값으로 대체
+            mean_val = df[col].mean()
+            if pd.isna(mean_val):  # 평균도 NaN이면 0으로 대체
+                df[col].fillna(0, inplace=True)
+                print(f"    → 0으로 대체")
+            else:
+                df[col].fillna(mean_val, inplace=True)
+                print(f"    → 평균값({mean_val:.2f})으로 대체")
+        else:
+            # 범주형: 최빈값으로 대체
+            mode_val = df[col].mode()[0] if len(df[col].mode()) > 0 else 0
+            df[col].fillna(mode_val, inplace=True)
+            print(f"    → 최빈값({mode_val})으로 대체")
+else:
+    print("✓ NaN 없음 - 모든 Feature가 정상입니다!")
 
 # ====== 4. 데이터 분할 ======
 print("\n[Phase 4] 데이터 분할")
