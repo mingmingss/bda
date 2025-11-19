@@ -199,10 +199,10 @@ def engineer_basic_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def calculate_popularity_features_no_leakage(df: pd.DataFrame,
-                                               train_end_date: pd.Timestamp) -> pd.DataFrame:
+def calculate_popularity_features(df: pd.DataFrame,
+                                  train_end_date: pd.Timestamp) -> pd.DataFrame:
     """
-    데이터 누출 없이 팀 인기도 features를 계산합니다.
+    팀 인기도 features를 계산합니다 (시간적 분리 적용).
 
     핵심: train_end_date 이전의 데이터만 사용하여 통계량을 계산합니다.
 
@@ -705,30 +705,30 @@ def save_results(output_dir: Path,
     output_dir.mkdir(exist_ok=True)
 
     # 1. 모델 성능 비교표
-    results_df.to_csv(output_dir / "model_performance_comparison_v2.csv",
+    results_df.to_csv(output_dir / "model_performance.csv",
                      index=False, encoding='utf-8-sig')
-    print(f"✓ 모델 성능 비교표 저장: model_performance_comparison_v2.csv")
+    print(f"✓ 모델 성능 비교표 저장: model_performance.csv")
 
     # 2. 예측 결과
-    test_results.to_csv(output_dir / "2025_predictions_detailed_v2.csv",
+    test_results.to_csv(output_dir / "predictions_2025.csv",
                        index=False, encoding='utf-8-sig')
-    print(f"✓ 예측 결과 저장: 2025_predictions_detailed_v2.csv")
+    print(f"✓ 예측 결과 저장: predictions_2025.csv")
 
     # 3. Feature Importance
     if feature_importance_df is not None:
-        feature_importance_df.to_csv(output_dir / "feature_importance_v2.csv",
+        feature_importance_df.to_csv(output_dir / "feature_importance.csv",
                                     index=False, encoding='utf-8-sig')
-        print(f"✓ Feature Importance 저장: feature_importance_v2.csv")
+        print(f"✓ Feature Importance 저장: feature_importance.csv")
 
     # 4. 튜닝된 파라미터
     if tuned_params:
         params_df = pd.DataFrame([tuned_params])
-        params_df.to_csv(output_dir / "best_hyperparameters_v2.csv",
+        params_df.to_csv(output_dir / "best_hyperparameters.csv",
                         index=False, encoding='utf-8-sig')
-        print(f"✓ 최적 파라미터 저장: best_hyperparameters_v2.csv")
+        print(f"✓ 최적 파라미터 저장: best_hyperparameters.csv")
 
     # 5. 최종 모델
-    model_path = output_dir / f"best_model_{best_model_name.replace(' ', '_')}_v2.pkl"
+    model_path = output_dir / f"best_model_{best_model_name.replace(' ', '_')}.pkl"
     joblib.dump(best_model, model_path)
     print(f"✓ 최종 모델 저장: {model_path.name}")
 
@@ -773,21 +773,21 @@ def main():
     print("2023년 학습 데이터에 대한 인기도 계산...")
     df_2023 = df[df['연도'] == 2023].copy()
     train_end_2023 = df_2023.iloc[min(60, len(df_2023)-1)]['일시']
-    df_2023 = calculate_popularity_features_no_leakage(df_2023, train_end_2023)
+    df_2023 = calculate_popularity_features(df_2023, train_end_2023)
     df_2023 = calculate_moving_average_and_target(df_2023)
 
     # 2024년 데이터: 2023년 전체 데이터 사용
     print("\n2024년 검증 데이터에 대한 인기도 계산...")
     df_2024 = df[df['연도'] == 2024].copy()
     train_end_2024 = df[df['연도'] == 2023]['일시'].max()
-    df_2024 = calculate_popularity_features_no_leakage(df_2024, train_end_2024)
+    df_2024 = calculate_popularity_features(df_2024, train_end_2024)
     df_2024 = calculate_moving_average_and_target(df_2024)
 
     # 2025년 데이터: 2023-2024년 전체 데이터 사용
     print("\n2025년 테스트 데이터에 대한 인기도 계산...")
     df_2025 = df[df['연도'] == 2025].copy()
     train_end_2025 = df[df['연도'].isin([2023, 2024])]['일시'].max()
-    df_2025 = calculate_popularity_features_no_leakage(df_2025, train_end_2025)
+    df_2025 = calculate_popularity_features(df_2025, train_end_2025)
     df_2025 = calculate_moving_average_and_target(df_2025)
 
     # 데이터 병합
