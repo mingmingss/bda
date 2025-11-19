@@ -13,6 +13,7 @@ KBO 정규시즌 관중 수 예측 모델 구축 - 개선 버전
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 import seaborn as sns
 from sklearn.model_selection import TimeSeriesSplit, GridSearchCV, cross_val_score
 from sklearn.ensemble import (
@@ -53,7 +54,35 @@ except ImportError:
     print("⚠️  LightGBM이 설치되지 않았습니다. pip install lightgbm")
 
 # 한글 폰트 설정
-plt.rcParams['font.family'] = 'DejaVu Sans'
+def setup_korean_font():
+    """한글 폰트를 설정합니다."""
+    import os
+
+    # matplotlib 폰트 캐시 삭제
+    cache_dir = os.path.expanduser('~/.cache/matplotlib')
+    if os.path.exists(cache_dir):
+        import shutil
+        try:
+            shutil.rmtree(cache_dir)
+        except:
+            pass
+
+    # 폰트 설정 - sans-serif fallback 체인 사용
+    # macOS, Windows, Linux에서 사용 가능한 한글 폰트들
+    plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['font.sans-serif'] = [
+        'AppleGothic',           # macOS
+        'Malgun Gothic',         # Windows
+        'Noto Sans CJK KR',      # Linux (Noto CJK)
+        'Noto Sans CJK JP',
+        'Noto Sans CJK SC',
+        'NanumGothic',           # Linux (나눔)
+        'WenQuanYi Zen Hei',     # Linux (WenQuanYi)
+        'DejaVu Sans'            # Fallback
+    ]
+    return True
+
+setup_korean_font()
 plt.rcParams['axes.unicode_minus'] = False
 sns.set_style('whitegrid')
 

@@ -14,13 +14,53 @@ KBO 관중 수 예측 - 결과 시각화
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 import seaborn as sns
 from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
 
 # 한글 폰트 설정
-plt.rcParams['font.family'] = 'DejaVu Sans'
+def setup_korean_font():
+    """한글 폰트를 설정합니다."""
+    import os
+    import subprocess
+
+    # Noto Sans CJK KR 설치 확인
+    font_paths = [
+        '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
+    ]
+
+    font_exists = any(os.path.exists(p) for p in font_paths)
+
+    if font_exists:
+        # matplotlib 폰트 캐시 삭제 및 재구축
+        cache_dir = os.path.expanduser('~/.cache/matplotlib')
+        if os.path.exists(cache_dir):
+            import shutil
+            try:
+                shutil.rmtree(cache_dir)
+            except:
+                pass
+
+        # 폰트 설정 - sans-serif fallback 체인 사용
+        plt.rcParams['font.family'] = 'sans-serif'
+        plt.rcParams['font.sans-serif'] = [
+            'Noto Sans CJK KR',
+            'Noto Sans CJK JP',
+            'Noto Sans CJK SC',
+            'WenQuanYi Zen Hei',
+            'DejaVu Sans'
+        ]
+        print("✓ 한글 폰트 설정: Noto Sans CJK (Fallback chain)")
+        return True
+    else:
+        print("⚠️  Noto Sans CJK 폰트가 설치되지 않았습니다.")
+        print("   macOS/Windows에서 실행하면 한글이 정상 표시됩니다.")
+        plt.rcParams['font.family'] = 'DejaVu Sans'
+        return False
+
+setup_korean_font()
 plt.rcParams['axes.unicode_minus'] = False
 sns.set_style('whitegrid')
 sns.set_palette('husl')
